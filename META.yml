@@ -1,0 +1,20 @@
+--- #YAML:1.0
+name: Rose-DBx-Object-Mobile
+version: 0.01
+author:
+  - Xufeng (Danny) Liang <danny.glue@gmail.com>
+abstract: jQuery Mobile UI for Rose::DB::Object
+license: perl
+requires:
+  Test::More: 0
+  JQuery::Mobile: 0
+  HTML::FillInForm: 0
+  Lingua::EN::Inflect: 0
+  Rose::Object: 0
+  Rose::DB::Object::Helpers: 0
+  Clone: 0
+  File::Path: 0
+  File::Copy::Recursive: 0
+  File::Spec: 0
+  Scalar::Util: 0
+  Exporter': 5.57
