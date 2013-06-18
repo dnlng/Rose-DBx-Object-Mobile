@@ -18,7 +18,7 @@ use Clone qw(clone);
 use HTML::FillInForm;
 
 our $VERSION = 0.01;
-# 27.3
+# 29.3
 
 sub load {
 	my ($self, $args) = @_;
@@ -60,7 +60,7 @@ sub mobile_pager {
 	$controlgroup->{type} = 'horizontal' unless exists $controlgroup->{type};
 
 	my $jquery_mobile = ref $args{jquery_mobile} eq 'OBJECT'? $args{jquery_mobile} : JQuery::Mobile->new(%{$args{jquery_mobile}});
-	
+
 	unless (defined $controlgroup->{content}) {
 
 		my $path = $args{path} || '/';
@@ -70,7 +70,7 @@ sub mobile_pager {
 
 		my $prev = $args{prev};
 		$prev->{href} ||= $path . $previous_page . $query_string;
-		$prev->{value} ||= 'Prev';
+		$prev->{value} ||= '&lsaquo;';
 
 		if ($previous_page == $args{get}->{page}) {
 			$prev->{class} .= ' ui-disabled';
@@ -79,7 +79,7 @@ sub mobile_pager {
 
 		my $next = $args{next};
 		$next->{href} ||= $path . $next_page . $query_string;
-		$next->{value} ||= 'Next';
+		$next->{value} ||= '&rsaquo;';
 		if ($next_page == $args{get}->{page}) {
 			$next->{class} .= ' ui-disabled';
 		}
@@ -100,7 +100,31 @@ sub mobile_pager {
 			}
 		}
 
-		$controlgroup->{content} = $prev_button . $page_buttons .  $next_button;
+		if ($args{first_last}) {
+			my $first = $args{first};
+			$first->{href} ||= $path . '1' . $query_string;
+			$first->{value} ||= '&laquo;';
+
+			if (! $args{get}->{page} || $args{get}->{page} == 1) {
+				$first->{class} .= ' ui-disabled';
+			}
+			my $first_button = $jquery_mobile->button(%{$first});
+
+			my $last = $args{last};
+			$last->{href} ||= $path . $last_page . $query_string;
+			$last->{value} ||= '&raquo;';
+
+			if ($last_page == $args{get}->{page}) {
+				$last->{class} .= ' ui-disabled';
+			}
+			my $last_button = $jquery_mobile->button(%{$last});
+
+			$controlgroup->{content} = $first_button. $prev_button . $page_buttons .  $next_button . $last_button;
+		}
+		else {
+			$controlgroup->{content} = $prev_button . $page_buttons .  $next_button;
+		}
+		
 	}
 		
 	my $output = $jquery_mobile->controlgroup(%{$controlgroup});
@@ -362,7 +386,6 @@ sub _init_form {
 	$form->{description} ||= $args->{description};
 	$form->{delimiter} ||= ',';
 	$form->{method} ||= 'post';
-	$form->{title} = $args->{title};
 
 	if (ref $self) {
 		my $primary_key = $class->meta->primary_key_column_names->[0];
@@ -374,13 +397,29 @@ sub _init_form {
 		}
 
 		$args->{queries}->{object} ||= $self->$primary_key;
-		$form->{title} ||= $self->can('stringify_me') ? _label($form->{button_action} . ' ' . $self->stringify_me()) : _label($form->{button_action} . ' ' . _singularise_table(_title($table, $args->{table_prefix}), $args->{tables_are_singular}));
 		$form->{object} = $self->$primary_key;
+
+		if (defined $args->{title}) {
+			if (length($args->{title})) {
+				$form->{title} = $args->{title};		
+			}
+		}
+		else {
+			$form->{title} = $self->can('stringify_me') ? _label($form->{button_action} . ' ' . $self->stringify_me()) : _label($form->{button_action} . ' ' . _singularise_table(_title($table, $args->{table_prefix}), $args->{tables_are_singular}));
+		}
 
 	}
 	else {
 		$form->{button_action} = 'create';
-		$form->{title} ||= _label($form->{button_action} . ' ' . _singularise_table(_title($table, $args->{table_prefix}), $args->{tables_are_singular}));
+
+		if (defined $args->{title}) {
+			if (length($args->{title})) {
+				$form->{title} = $args->{title};		
+			}
+		}
+		else {
+			$form->{title} = _label($form->{button_action} . ' ' . _singularise_table(_title($table, $args->{table_prefix}), $args->{tables_are_singular}));
+		}
 	}
 
 	return $form;
